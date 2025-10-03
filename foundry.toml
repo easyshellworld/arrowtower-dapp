@@ -1,0 +1,14 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]  # 只保留 lib，移除 node_modules
+
+# 可选：设置 Solidity 版本
+solc_version = "0.8.20"
+
+# 可选：优化器设置
+optimizer = true
+optimizer_runs = 200
+
+# 可选：测试和脚本配置
+verbosity = 1
