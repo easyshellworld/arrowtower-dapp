@@ -11,7 +11,7 @@
 
 ## 📖 Project Overview
 
-ArrowTower is a geo-location check-in dApp built in the Polkadot ecosystem. One-click deployment and multi-scenario applicability are supported. Gasless minting is achieved via backend-sponsored transactions, enabling barrier-free Web3 onboarding. The first application scenario is Arrow Tower Village (rural tourism). After a user completes route check-ins and interactive tasks, an NFT digital souvenir is minted and delivered automatically, without requiring the user to manage gas, fees, wallets, or signatures.
+ArrowTower is a geo-location check-in dApp built in the Polkadot ecosystem. One-click deployment and multi-scenario applicability are supported. Gasless minting is achieved via backend-sponsored transactions, enabling barrier-free Web3 onboarding. The first application scenario is Arrow Tower Village (rural tourism). After a user completes route check-ins and interactive tasks, an NFT digital souvenir is minted and delivered automatically, without requiring the user to manage gas fees, wallets, or signatures.
 
 ![Snapshot](./public/ppt/snapshot.png)
 
