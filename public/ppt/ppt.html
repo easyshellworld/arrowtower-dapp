@@ -21,7 +21,7 @@
 
         .slide {
             width: 100vw;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -504,6 +504,310 @@
             width: 20px;
             height: 20px;
         }
+
+        /* 新增：响应式设计 */
+        
+        /* 平板设备 (768px 到 1024px) */
+        @media (max-width: 1024px) {
+            h1 {
+                font-size: 3rem;
+            }
+            
+            h2 {
+                font-size: 2rem;
+            }
+            
+            h3 {
+                font-size: 1.75rem;
+            }
+            
+            p {
+                font-size: 1.1rem;
+            }
+            
+            .slide {
+                padding: 1.5rem;
+            }
+            
+            .feature-list li, .scenario-list li {
+                font-size: 1rem;
+            }
+            
+            .tech-stack {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            
+            .scenario-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+            
+            .team-member {
+                width: 130px;
+            }
+            
+            .team-member img {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .navigation {
+                bottom: 1.5rem;
+                right: 1.5rem;
+            }
+            
+            .slide-counter {
+                bottom: 1.5rem;
+                left: 1.5rem;
+            }
+            
+            .partner-logo {
+                height: 60px;
+                max-width: 140px;
+            }
+        }
+        
+        /* 手机设备 (小于768px) */
+        @media (max-width: 767px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 1.75rem;
+            }
+            
+            h3 {
+                font-size: 1.5rem;
+            }
+            
+            p {
+                font-size: 1rem;
+            }
+            
+            .slide {
+                padding: 1rem;
+                min-height: 100vh;
+                height: auto;
+            }
+            
+            .slide-content {
+                width: 95%;
+            }
+            
+            .feature-list, .scenario-list {
+                text-align: left;
+                padding: 0 1rem;
+            }
+            
+            .feature-list li, .scenario-list li {
+                font-size: 0.95rem;
+                margin-bottom: 0.8rem;
+                padding-left: 1.2rem;
+            }
+            
+            .tech-stack {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .tech-category {
+                padding: 1rem;
+            }
+            
+            .scenario-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .team-members {
+                gap: 1rem;
+            }
+            
+            .team-member {
+                width: 100px;
+            }
+            
+            .team-member img {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .navigation {
+                bottom: 1rem;
+                right: 1rem;
+            }
+            
+            .nav-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 0.9rem;
+            }
+            
+            .slide-counter {
+                bottom: 1rem;
+                left: 1rem;
+                font-size: 0.9rem;
+                padding: 0.4rem 0.8rem;
+            }
+            
+            .partners-container {
+                gap: 1rem;
+            }
+            
+            .partner-logo {
+                height: 50px;
+                max-width: 120px;
+            }
+            
+            .acknowledgement-title {
+                font-size: 2rem;
+            }
+            
+            .center-image {
+                margin: 1.5rem auto;
+            }
+            
+            .small-image, .smaller-image, .larger-image {
+                max-width: 100% !important;
+            }
+            
+            .badges-container {
+                gap: 0.3rem;
+            }
+            
+            .badge {
+                height: 18px;
+            }
+            
+            .links-container {
+                gap: 0.8rem;
+            }
+            
+            .link-item {
+                font-size: 0.9rem;
+            }
+            
+            .btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+            
+            .demo-video-btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+            
+            .arch-container {
+                width: 100%;
+            }
+            
+            .arch-layer {
+                padding: 0.8rem;
+            }
+            
+            .arch-layer h4 {
+                font-size: 1rem;
+            }
+            
+            .arch-layer p {
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* 小屏幕手机 (小于480px) */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            h3 {
+                font-size: 1.25rem;
+            }
+            
+            p {
+                font-size: 0.9rem;
+            }
+            
+            .feature-list li, .scenario-list li {
+                font-size: 0.9rem;
+            }
+            
+            .team-member {
+                width: 80px;
+            }
+            
+            .team-member img {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .partner-logo {
+                height: 40px;
+                max-width: 100px;
+            }
+            
+            .acknowledgement-title {
+                font-size: 1.75rem;
+            }
+            
+            .navigation {
+                bottom: 0.8rem;
+                right: 0.8rem;
+            }
+            
+            .slide-counter {
+                bottom: 0.8rem;
+                left: 0.8rem;
+            }
+            
+            .badge {
+                height: 16px;
+            }
+        }
+        
+        /* 横屏手机优化 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .slide {
+                padding: 1rem;
+                min-height: auto;
+                height: auto;
+                margin-bottom: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 1rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .center-image {
+                margin: 1rem auto;
+                max-width: 300px;
+            }
+            
+            .feature-list li, .scenario-list li {
+                margin-bottom: 0.5rem;
+            }
+        }
+        
+        /* 防止文本过小 */
+        @media (max-width: 320px) {
+            html {
+                font-size: 14px;
+            }
+            
+            .badge {
+                height: 14px;
+            }
+        }
     </style>
 </head>
 
@@ -827,8 +1131,8 @@
                 <img src="/ppt/polkadotlogo.png" alt="Polkadot" class="partner-logo">
                 <img src="/ppt/papermoon.png" alt="Papermoon" class="partner-logo">
                 <img src="/ppt/oneblock.jpg" alt="OneBlock" class="partner-logo">
-                <img src="/ppt/wlogo.jpg" alt="W Logo" class="partner-logo">
-                <img src="/ppt/nantang.webp" alt="W Logo" class="partner-logo">
+                <img src="/ppt/wlogo.jpg" alt="Wuxiang Logo" class="partner-logo">
+                <img src="/ppt/nantang.webp" alt="NanTang dao Logo" class="partner-logo">
             </div>
             <p>Thanks to the Polkadot ecosystem for supporting Web3 infrastructure</p>
             <p>Thanks to all developers and community members who contributed to this project!</p>
@@ -884,6 +1188,38 @@
                     }
                 }
             });
+
+            // Touch swipe support for mobile
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            document.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            
+            document.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+            
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                const swipeDistance = touchEndX - touchStartX;
+                
+                if (swipeDistance > swipeThreshold) {
+                    // Swipe right - previous slide
+                    if (currentSlide > 0) {
+                        currentSlide--;
+                        showSlide(currentSlide);
+                    }
+                } else if (swipeDistance < -swipeThreshold) {
+                    // Swipe left - next slide
+                    if (currentSlide < slides.length - 1) {
+                        currentSlide++;
+                        showSlide(currentSlide);
+                    }
+                }
+            }
 
             // Show specified slide
             function showSlide(index) {
