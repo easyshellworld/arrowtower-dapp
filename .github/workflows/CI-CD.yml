@@ -25,11 +25,11 @@ jobs:
         with:
           filters: |
             src:
-              - 'app/**'
-              - 'components/**'
-              - 'lib/**'
+              - 'src/app/**'
+              - '/src/components/**'
+              - '/src/lib/**'
               - 'prisma/**'
-              - 'public/**'
+              - '/src/tests/**'
               - 'package*.json'
               - 'next.config.*'
               - 'tsconfig.json'
