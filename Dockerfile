@@ -9,7 +9,7 @@ RUN apk add --no-cache curl python3 make g++
 COPY package.json package-lock.json* ./
 
 # 安装依赖
-RUN npm install
+RUN npm ci
 
 # 复制所有源码
 COPY . .
