@@ -4,6 +4,10 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translateData } from '@/lib/i18n/dataTranslations';
+import { Progress } from '@/components/ui/progress';
+import { MapPin, Trophy, Navigation, Footprints } from 'lucide-react';
 
 interface CheckinResult {
   success: boolean;
@@ -17,7 +21,7 @@ interface CheckinResult {
       total: number;
       nextPOI: { id: string; name: string } | null;
       isRouteCompleted: boolean;
-      completedPOIs?: Array<{ name: string; order: number }>; // 已完成的POI列表
+      completedPOIs?: Array<{ name: string; order: number }>;
     };
     nftStatus: {
       willMint: boolean;
@@ -29,23 +33,21 @@ interface CheckinResult {
 
 interface CheckinProgressProps {
   result: CheckinResult | null;
-  completedPOIs?: Array<{ name: string; order: number }>; // 从父组件传入的已完成列表
-  routeName?: string; // 路线名称
-  totalPOIs?: number; // 总景点数
+  completedPOIs?: Array<{ name: string; order: number }>;
+  routeName?: string;
+  totalPOIs?: number;
 }
 
 export function CheckinProgress({ result, completedPOIs = [], routeName, totalPOIs }: CheckinProgressProps) {
   const router = useRouter();
+  const { t, locale } = useLanguage();
 
   // 监听 NFT 铸造状态，自动跳转
   useEffect(() => {
-    // 检查是否完成路线且将要铸造 NFT
     if (result?.success && result.data?.nftStatus.willMint) {
-      // 延迟 2 秒后跳转，给用户看到成功提示的时间
       const timer = setTimeout(() => {
         router.push('/user/checkmint');
       }, 2000);
-
       return () => clearTimeout(timer);
     }
   }, [result, router]);
@@ -53,80 +55,85 @@ export function CheckinProgress({ result, completedPOIs = [], routeName, totalPO
   // 如果没有 result，显示基本的进度卡片
   if (!result) {
     const completed = completedPOIs.length;
-    const total = totalPOIs || 3; // 默认3个景点
+    const total = totalPOIs || 3;
     const isRouteCompleted = completed >= total;
+    const progress = (completed / total) * 100;
     
     return (
-      <Card className="p-6 border-l-4 border-blue-500">
-        <h3 className="text-lg font-bold mb-4 text-blue-900">
-          🎯 打卡进度
-        </h3>
-        
-        <div className="space-y-4">
-          {/* 路线进度 */}
-          <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200">
-            <h4 className="font-bold text-blue-900 mb-3">🛤️ {routeName || '当前路线'}</h4>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-blue-700 font-medium">
-                已完成 {completed} / {total}
-              </span>
-              <Badge 
-                className={isRouteCompleted ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white'}
-              >
-                {isRouteCompleted ? '已完成' : '进行中'}
-              </Badge>
-            </div>
-            <div className="w-full bg-blue-200 rounded-full h-3 mb-3">
-              <div 
-                className="bg-gradient-to-r from-blue-500 to-emerald-500 h-3 rounded-full transition-all duration-500"
-                style={{ 
-                  width: `${(completed / total) * 100}%` 
-                }}
-              ></div>
-            </div>
-            
-            {/* 已打卡的景点列表 */}
-            {completedPOIs.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-blue-200">
-                <p className="text-xs text-blue-600 font-semibold mb-2">✓ 已打卡景点：</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {completedPOIs.map((poi, index) => (
-                    <Badge 
-                      key={index}
-                      variant="outline" 
-                      className="text-xs border-emerald-400 text-emerald-700 bg-emerald-50"
-                    >
-                      {poi.name}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
+      <Card className="relative overflow-hidden bg-white/95 backdrop-blur-md shadow-xl border border-stone-200/50 rounded-2xl p-6 transition-all hover:shadow-2xl">
+        {/* 顶部标题 */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600">
+            <Footprints className="w-5 h-5" />
           </div>
-
-          {/* 完成提示或鼓励信息 */}
-          {isRouteCompleted ? (
-            <div className="p-4 bg-gradient-to-br from-emerald-100 to-green-100 rounded-lg border-2 border-emerald-300">
-              <h4 className="font-bold text-emerald-900 mb-2 text-lg">🎉 恭喜！</h4>
-              <p className="text-base text-emerald-800 font-medium">
-                已完成所有打卡点，NFT 奖励即将发放！
-              </p>
+          <div>
+            <h3 className="text-lg font-bold text-stone-800">
+              {routeName ? translateData(routeName, 'routes', locale) : t('route.currentRoute')}
+            </h3>
+            <p className="text-xs text-stone-500 font-medium">
+              {t('progress.title')}
+            </p>
+          </div>
+        </div>
+        
+        <div className="space-y-6">
+          {/* 进度条 */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-stone-600 font-medium">
+                {t('progress.completedCount')}: {completed}/{total}
+              </span>
+              <span className="text-emerald-600 font-bold">{Math.round(progress)}%</span>
             </div>
-          ) : completed > 0 && (
-            <div className="p-4 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-lg border-2 border-yellow-300">
-              <h4 className="font-bold text-yellow-900 mb-2">💪 继续加油</h4>
-              <p className="text-base text-yellow-800 font-medium">
-                还有 {total - completed} 个景点等待打卡！
-              </p>
+            <div className="h-3 bg-stone-100 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-1000 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+            
+          {/* 已打卡的景点列表 */}
+          {completedPOIs.length > 0 && (
+            <div className="space-y-3">
+              <p className="text-xs text-stone-500 font-bold uppercase tracking-wider">{t('progress.checkedPOIs')}</p>
+              <div className="flex flex-wrap gap-2">
+                {completedPOIs.map((poi, index) => (
+                  <Badge 
+                    key={index}
+                    variant="secondary" 
+                    className="pl-2 pr-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-100 transition-colors"
+                  >
+                    <MapPin className="w-3 h-3 mr-1.5" />
+                    {translateData(poi.name, 'pois', locale)}
+                  </Badge>
+                ))}
+              </div>
             </div>
           )}
-          
-          {completed === 0 && (
-            <div className="p-4 bg-gradient-to-br from-gray-50 to-slate-50 rounded-lg border-2 border-gray-300">
-              <h4 className="font-bold text-gray-900 mb-2">🗺️ 开始探索</h4>
-              <p className="text-base text-gray-800 font-medium">
-                点击地图上的景点开始打卡吧！
-              </p>
+
+          {/* 状态提示卡片 */}
+          {isRouteCompleted ? (
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-100/50 flex items-start gap-3">
+              <Trophy className="w-5 h-5 text-amber-500 mt-0.5" />
+              <div>
+                <h4 className="font-bold text-amber-900 text-sm mb-1">{t('progress.congratulations')}</h4>
+                <p className="text-xs text-amber-800/80 leading-relaxed">
+                  {t('progress.allCompleted')} {t('progress.nftReward')}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-stone-50 rounded-xl p-4 border border-stone-100 flex items-start gap-3">
+              <Navigation className="w-5 h-5 text-stone-400 mt-0.5" />
+              <div>
+                <h4 className="font-bold text-stone-700 text-sm mb-1">
+                  {completed === 0 ? t('progress.startExploring') : t('progress.keepGoing')}
+                </h4>
+                <p className="text-xs text-stone-500 leading-relaxed">
+                  {completed === 0 ? t('progress.clickToStart') : `${total - completed} ${t('progress.remaining')}`}
+                </p>
+              </div>
             </div>
           )}
         </div>
@@ -135,95 +142,113 @@ export function CheckinProgress({ result, completedPOIs = [], routeName, totalPO
   }
   
   // 有 result 时，显示详细的打卡结果
-
   const isRouteCompleted = result.data?.routeProgress.isRouteCompleted || false;
   const willMint = result.data?.nftStatus.willMint || false;
+  const progress = result.data ? (result.data.routeProgress.completed / result.data.routeProgress.total) * 100 : 0;
 
   return (
-    <Card className={`p-6 ${
-      result.success ? 'border-l-4 border-emerald-500' : 'border-l-4 border-red-500'
+    <Card className={`relative overflow-hidden bg-white/95 backdrop-blur-md shadow-xl rounded-2xl p-6 transition-all ${
+      result.success ? 'border-t-4 border-t-emerald-500' : 'border-t-4 border-t-red-500'
     }`}>
-      <h3 className="text-lg font-bold mb-4 text-emerald-900">
-        {result.success ? '✅ 打卡成功' : '❌ 打卡失败'}
-      </h3>
+      <div className="flex items-center gap-3 mb-6">
+        <div className={`p-2 rounded-lg ${result.success ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
+          {result.success ? <MapPin className="w-5 h-5" /> : <Info className="w-5 h-5" />}
+        </div>
+        <div>
+          <h3 className="text-lg font-bold text-stone-800">
+            {result.success ? t('user.checkinSuccess') : t('user.checkinFailed')}
+          </h3>
+          {result.success && result.data && (
+            <p className="text-xs text-stone-500 font-medium">
+              {translateData(result.data.poi.name, 'pois', locale)} <span className="opacity-60">(#{result.data.poi.order})</span>
+            </p>
+          )}
+        </div>
+      </div>
       
       {result.success && result.data && (
-        <div className="space-y-4">
-          {/* 打卡点信息 */}
-          <div className="p-4 bg-gradient-to-br from-emerald-50 to-green-50 rounded-lg border-2 border-emerald-200">
-            <p className="text-base text-emerald-800 font-semibold">
-              📍 {result.data.poi.name} <span className="text-sm text-emerald-600">(第 {result.data.poi.order} 站)</span>
-            </p>
-          </div>
-
-          {/* 路线进度 */}
-          <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200">
-            <h4 className="font-bold text-blue-900 mb-3">🛤️ 路线进度</h4>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-blue-700 font-medium">
-                已完成 {result.data.routeProgress.completed} / {result.data.routeProgress.total}
+        <div className="space-y-6">
+          {/* 进度条 */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-stone-600 font-medium">
+                {t('progress.routeProgress')}
               </span>
-              <Badge 
-                className={isRouteCompleted ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white'}
-              >
-                {isRouteCompleted ? '已完成' : '进行中'}
-              </Badge>
+              <span className="text-emerald-600 font-bold">{Math.round(progress)}%</span>
             </div>
-            <div className="w-full bg-blue-200 rounded-full h-3 mb-3">
+            <div className="h-3 bg-stone-100 rounded-full overflow-hidden">
               <div 
-                className="bg-gradient-to-r from-blue-500 to-emerald-500 h-3 rounded-full transition-all duration-500"
-                style={{ 
-                  width: `${(result.data.routeProgress.completed / result.data.routeProgress.total) * 100}%` 
-                }}
-              ></div>
+                className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-1000 ease-out"
+                style={{ width: `${progress}%` }}
+              />
             </div>
-            
-            {/* 已打卡的景点列表 */}
-            {completedPOIs.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-blue-200">
-                <p className="text-xs text-blue-600 font-semibold mb-2">✓ 已打卡景点：</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {completedPOIs.map((poi, index) => (
-                    <Badge 
-                      key={index}
-                      variant="outline" 
-                      className="text-xs border-emerald-400 text-emerald-700 bg-emerald-50"
-                    >
-                      {poi.name}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
+            
+          {/* 已打卡列表 */}
+          {completedPOIs.length > 0 && (
+            <div className="space-y-3">
+               <p className="text-xs text-stone-500 font-bold uppercase tracking-wider">{t('progress.checkedPOIs')}</p>
+              <div className="flex flex-wrap gap-2">
+                {completedPOIs.map((poi, index) => (
+                  <Badge 
+                    key={index}
+                    variant="secondary" 
+                    className="pl-2 pr-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-100 transition-colors"
+                  >
+                    <MapPin className="w-3 h-3 mr-1.5" />
+                    {translateData(poi.name, 'pois', locale)}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
 
-          {/* 下一个打卡点或完成提示 */}
+          {/* 结果状态卡片 */}
           {isRouteCompleted || willMint ? (
-            <div className="p-4 bg-gradient-to-br from-emerald-100 to-green-100 rounded-lg border-2 border-emerald-300 animate-pulse">
-              <h4 className="font-bold text-emerald-900 mb-2 text-lg">🎉 恭喜！</h4>
-              <p className="text-base text-emerald-800 font-medium mb-2">
-                已完成所有打卡点{willMint && '，NFT 奖励即将发放'}！
-              </p>
-              {willMint && (
-                <p className="text-sm text-emerald-700 font-medium animate-bounce">
-                  🚀 即将跳转到 NFT 查询页面...
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-100/50 flex items-start gap-3 animate-in fade-in slide-in-from-bottom-2 duration-700">
+              <Trophy className="w-5 h-5 text-amber-500 mt-0.5 animate-pulse" />
+              <div>
+                <h4 className="font-bold text-amber-900 text-sm mb-1">{t('progress.congratulations')}</h4>
+                <p className="text-xs text-amber-800/80 leading-relaxed">
+                  {t('progress.allCompleted')}{willMint && ` ${t('progress.nftReward')}`}
                 </p>
-              )}
+                {willMint && (
+                  <p className="text-xs font-bold text-amber-600 mt-2 flex items-center gap-1">
+                     {t('progress.redirecting')}
+                  </p>
+                )}
+              </div>
             </div>
           ) : result.data.routeProgress.nextPOI && (
-            <div className="p-4 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-lg border-2 border-yellow-300">
-              <h4 className="font-bold text-yellow-900 mb-2">📍 下一个打卡点</h4>
-              <p className="text-base text-yellow-800 font-medium">
-                {result.data.routeProgress.nextPOI.name}
-              </p>
+            <div className="bg-stone-50 rounded-xl p-4 border border-stone-100 flex items-start gap-3">
+              <Navigation className="w-5 h-5 text-stone-400 mt-0.5" />
+              <div>
+                <h4 className="font-bold text-stone-700 text-sm mb-1">{t('progress.nextPOI')}</h4>
+                <p className="text-xs text-stone-500 leading-relaxed">
+                  {result.data.routeProgress.nextPOI.name}
+                </p>
+              </div>
             </div>
           )}
         </div>
       )}
 
       {!result.success && (
-        <p className="text-red-600 font-medium">{result.message || '打卡失败，请重试'}</p>
+        <div className="bg-red-50 rounded-xl p-4 border border-red-100 text-red-600 text-sm">
+          {result.message || t('user.checkinFailed')}
+        </div>
       )}
     </Card>
+  );
+}
+
+// 辅助图标组件
+function Info({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
   );
 }

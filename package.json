@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "dev": "next dev",
+    "build": "next build",
     "start": "next start",
     "test": "jest",
     "init:db": "npx tsx prisma/initdb.ts",
@@ -28,6 +28,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "ethers": "^6.15.0",
+    "framer-motion": "^12.23.25",
     "ioredis": "^5.8.1",
     "lucide-react": "^0.544.0",
     "next": "^16.0.7",

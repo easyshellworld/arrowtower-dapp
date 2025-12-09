@@ -10,6 +10,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LogOut, RefreshCcw } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 
 export function ArrowTowerHeader() {
   const { data: session } = useSession();
@@ -20,6 +22,9 @@ export function ArrowTowerHeader() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [autoReconnectCount, setAutoReconnectCount] = useState(0);
   const reconnectAttempted = useRef(false);
+  
+  // 引入多语言
+  const { t } = useLanguage();
 
   // 自动重连逻辑
   useEffect(() => {
@@ -85,16 +90,19 @@ export function ArrowTowerHeader() {
   };
 
   return (
-    <Card className="mb-4 p-4 bg-white/80 backdrop-blur-sm shadow-lg border-2 border-emerald-200 max-w-6xl mx-auto">
+    <Card className="mb-4 p-4 bg-white/90 backdrop-blur-md shadow-xl border-2 border-emerald-200/50 max-w-6xl mx-auto rounded-2xl transition-all duration-300 hover:shadow-emerald-100/50">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-emerald-900 mb-1">
-            🗺️ Arrow Tower
-          </h2>
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-xl font-bold bg-gradient-to-r from-emerald-700 to-teal-600 bg-clip-text text-transparent">
+              🗺️ {t('home.title')}
+            </h2>
+          </div>
+          
           <div className="flex items-center gap-2 flex-wrap">
             {/* 显示钱包地址 */}
             {(address || session?.user?.address) && (
-              <Badge variant="outline" className="border-emerald-600 text-emerald-700">
+              <Badge variant="outline" className="border-emerald-600/50 text-emerald-700 bg-emerald-50/50">
                 💼 {(address || session?.user?.address)?.slice(0, 6)}...
                 {(address || session?.user?.address)?.slice(-4)}
               </Badge>
@@ -102,10 +110,10 @@ export function ArrowTowerHeader() {
             
             {/* 连接状态指示 */}
             {isConnected ? (
-              <Badge className="bg-emerald-600 text-white">
+              <Badge className="bg-emerald-600 text-white shadow-sm">
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                  已连接
+                  {t('common.walletConnected')}
                 </div>
               </Badge>
             ) : (
@@ -118,12 +126,12 @@ export function ArrowTowerHeader() {
                   className="border-emerald-600 text-emerald-700 hover:bg-emerald-50 h-6 px-2 text-xs"
                 >
                   <RefreshCcw className="w-3 h-3 mr-1" />
-                  {status === 'pending' ? '重连中...' : '重连钱包'}
+                  {status === 'pending' ? t('home.connecting') : t('common.connectWallet')}
                 </Button>
                 {/* 显示自动重连尝试次数 */}
                 {session && autoReconnectCount > 0 && (
                   <Badge variant="outline" className="border-amber-500 text-amber-700 text-xs">
-                    自动重连 {autoReconnectCount}/3
+                    Retry {autoReconnectCount}/3
                   </Badge>
                 )}
               </>
@@ -131,27 +139,31 @@ export function ArrowTowerHeader() {
           </div>
         </div>
 
-        {/* 登出按钮 */}
-        {(isConnected || session) && (
-          <Button
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            variant="outline"
-            className="border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-bold"
-          >
-            {isLoggingOut ? (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full"></div>
-                <span>退出中...</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <LogOut className="w-4 h-4" />
-                <span>登出</span>
-              </div>
-            )}
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {/* 语言切换器 */}
+          <LanguageSwitcher />
+
+          {/* 登出按钮 */}
+          {(isConnected || session) && (
+            <Button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              variant="outline"
+              size="sm"
+              className="border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-bold ml-2 rounded-xl transition-all hover:scale-105 active:scale-95"
+            >
+              {isLoggingOut ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full"></div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <LogOut className="w-4 h-4" />
+                </div>
+              )}
+            </Button>
+          )}
+        </div>
       </div>
     </Card>
   );

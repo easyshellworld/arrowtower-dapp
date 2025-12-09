@@ -1,0 +1,210 @@
+export type Locale = 'en' | 'zh';
+
+export const dictionary = {
+  en: {
+    common: {
+      loading: "Loading...",
+      connectWallet: "Connect Wallet",
+      walletConnected: "Connected",
+      installWallet: "Please install MetaMask",
+      networkError: "Network Error",
+      success: "Success",
+      error: "Error",
+      confirm: "Confirm",
+      cancel: "Cancel",
+      close: "Close",
+      language: "Language",
+      processing: "Processing..."
+    },
+    home: {
+      title: "Arrow Tower Village",
+      subtitle: "Make Exploration a Digital Memory",
+      connectPrompt: "Connect wallet to start your journey",
+      connecting: "Connecting...",
+      signing: "Signing...",
+      signPrompt: "Please confirm in your wallet",
+      authenticating: "Authenticating...",
+      registering: "Registering...",
+      authFailed: "Authentication Failed",
+      retry: "Retry",
+      walletPending: "Pending signature in wallet",
+      userRejected: "Signature rejected"
+    },
+    user: {
+      title: "Discover Arrow Tower",
+      subtitle: "Explore rural culture, collect digital memories",
+      currentRoute: "Current Journey",
+      selectRoute: "Select Your Journey",
+      points: "Spots",
+      checkin: "Check-in",
+      checkinSuccess: "Check-in Successful!",
+      checkinFailed: "Check-in Failed",
+      viewNFT: "My Digital Souvenirs",
+      routes: "Routes",
+      progress: "Progress",
+      completed: "Completed",
+      inProgress: "In Progress",
+      locked: "Locked"
+    },
+    progress: {
+      title: "Journey Progress",
+      routeProgress: "Footprints",
+      completedCount: "Completed",
+      of: "of",
+      checkedPOIs: "Visited:",
+      congratulations: "Congratulations!",
+      allCompleted: "Journey Completed!",
+      nftReward: "Your digital souvenir is being minted!",
+      redirecting: "Redirecting to collection...",
+      keepGoing: "Keep Exploring!",
+      remaining: "spots left to visit!",
+      startExploring: "Start Journey",
+      clickToStart: "Click on a map marker to begin!",
+      nextPOI: "Next Destination"
+    },
+    route: {
+      currentRoute: "Current Journey",
+      selectRoute: "Select Exploration Route",
+      checkpoints: "spots",
+      completed: "completed"
+    },
+    poi: {
+      title: "Spot Detail",
+      landmark: "Landmark",
+      imageError: "Image unavailable",
+      checkedIn: "Visited",
+      alreadyChecked: "You have already visited this spot",
+      checkinNow: "Check-in Here",
+      checkinGuide: "Guide",
+      guideWallet: "Wallet signature required",
+      guideLocation: "Location access required",
+      guideOnce: "One check-in per spot",
+      notInRoute: "This spot is not on your current route. Please select the correct route first."
+    },
+    signature: {
+      title: "Signature Confirmation",
+      description: "Please sign to verify your visit",
+      checkinInfo: "Visit Info",
+      checkpoint: "Spot:",
+      time: "Time:",
+      securityTitle: "Security Note",
+      securityFree: "Free identity verification",
+      securityVerify: "Verifies wallet ownership",
+      securityNoTransfer: "No assets transferred",
+      securityMetamask: "Click 'Sign' in MetaMask",
+      confirmSign: "Confirm Sign",
+      waitingSign: "Waiting..."
+    },
+    wallet: {
+      copied: "Copied!",
+      copyAddress: "Copy Address",
+      viewExplorer: "View in Explorer",
+      disconnect: "Disconnect",
+      connecting: "Connecting...",
+      connectMetamask: "Connect MetaMask"
+    }
+  },
+  zh: {
+    common: {
+      loading: "加载中...",
+      connectWallet: "连接钱包",
+      walletConnected: "已连接",
+      installWallet: "请安装 MetaMask 钱包",
+      networkError: "网络错误",
+      success: "成功",
+      error: "错误",
+      confirm: "确认",
+      cancel: "取消",
+      close: "关闭",
+      language: "语言",
+      processing: "处理中..."
+    },
+    home: {
+      title: "箭塔村",
+      subtitle: "每一次探索，都是永恒的数字记忆",
+      connectPrompt: "连接钱包，开启您的乡村探索之旅",
+      connecting: "连接中...",
+      signing: "签名中...",
+      signPrompt: "请在钱包中确认",
+      authenticating: "认证中...",
+      registering: "注册中...",
+      authFailed: "认证失败",
+      retry: "重试",
+      walletPending: "请在钱包中完成签名",
+      userRejected: "用户取消了签名"
+    },
+    user: {
+      title: "云游箭塔村",
+      subtitle: "探索乡野文化，收获数字藏品",
+      currentRoute: "当前旅程",
+      selectRoute: "选择您的旅程",
+      points: "处景点",
+      checkin: "打卡留念",
+      checkinSuccess: "打卡成功！",
+      checkinFailed: "打卡失败",
+      viewNFT: "查看我的数字纪念品",
+      routes: "路线列表",
+      progress: "探索进度",
+      completed: "已完成",
+      inProgress: "进行中",
+      locked: "未解锁"
+    },
+    progress: {
+      title: "旅程进度",
+      routeProgress: "探索足迹",
+      completedCount: "已完成",
+      of: "/",
+      checkedPOIs: "已打卡：",
+      congratulations: "恭喜！",
+      allCompleted: "旅程圆满完成！",
+      nftReward: "您的数字纪念品正在铸造中！",
+      redirecting: "即将前往纪念品页面...",
+      keepGoing: "继续加油！",
+      remaining: "处景点等待探索！",
+      startExploring: "开始探索",
+      clickToStart: "点击地图上的景点开始打卡吧！",
+      nextPOI: "下一站"
+    },
+    route: {
+      currentRoute: "当前旅程",
+      selectRoute: "选择探索路线",
+      checkpoints: "处景点",
+      completed: "已完成"
+    },
+    poi: {
+      title: "景点详情",
+      landmark: "景点",
+      imageError: "图片加载失败",
+      checkedIn: "已打卡",
+      alreadyChecked: "您已在此留下足迹",
+      checkinNow: "在此打卡",
+      checkinGuide: "打卡说明",
+      guideWallet: "需钱包签名验证身份",
+      guideLocation: "需开启定位权限",
+      guideOnce: "每处景点仅需打卡一次",
+      notInRoute: "此景点不在当前路线上，请先选择对应的路线"
+    },
+    signature: {
+      title: "签名确认",
+      description: "请确认签名以完成打卡验证",
+      checkinInfo: "打卡信息",
+      checkpoint: "地点：",
+      time: "时间：",
+      securityTitle: "安全提示",
+      securityFree: "免费身份验证，无需Gas费",
+      securityVerify: "签名仅用于验证身份",
+      securityNoTransfer: "涉及任何资产转移",
+      securityMetamask: '请在钱包弹窗中点击"签名"',
+      confirmSign: "确认签名",
+      waitingSign: "等待签名..."
+    },
+    wallet: {
+      copied: "已复制！",
+      copyAddress: "复制地址",
+      viewExplorer: "在浏览器中查看",
+      disconnect: "断开连接",
+      connecting: "连接中...",
+      connectMetamask: "连接 MetaMask"
+    }
+  }
+};

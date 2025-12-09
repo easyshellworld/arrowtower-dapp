@@ -16,6 +16,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { AlertCircle, Check, Copy, ExternalLink } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 // MetaMask 狐狸图标 SVG 组件
 const MetaMaskIcon = () => (
@@ -53,6 +54,7 @@ const MetaMaskIcon = () => (
 );
 
 export function ConnectWallet() {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { address, isConnected } = useAccount();
@@ -110,7 +112,7 @@ export function ConnectWallet() {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {copied ? "已复制!" : "复制地址"}
+                  {copied ? t('wallet.copied') : t('wallet.copyAddress')}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -126,7 +128,7 @@ export function ConnectWallet() {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  在浏览器中查看
+                  {t('wallet.viewExplorer')}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -136,7 +138,7 @@ export function ConnectWallet() {
             onClick={() => disconnect()} 
             className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold shadow-lg transition-all duration-200"
           >
-            断开连接
+            {t('wallet.disconnect')}
           </Button>
         </>
       ) : (
@@ -148,7 +150,7 @@ export function ConnectWallet() {
           >
             <MetaMaskIcon />
             <span className="text-lg">
-              {isPending ? "连接中..." : "连接 MetaMask"}
+              {isPending ? t('wallet.connecting') : t('wallet.connectMetamask')}
             </span>
           </Button>
           

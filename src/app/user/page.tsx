@@ -11,9 +11,11 @@ import { SignatureConfirm } from '@/components/maps/SignatureConfirm';
 import { CheckinProgress } from '@/components/maps/CheckinProgress';
 import { ArrowTowerHeader } from '@/components/maps/ArrowTowerHeader';
 import { RouteSelector } from '@/components/maps/RouteSelector';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { PageTransition } from '@/components/ui/PageTransition';
+import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 
 // 类型定义
 interface Route {
@@ -38,6 +40,7 @@ interface CheckinResponse {
       total: number;
       nextPOI: { id: string; name: string } | null;
       isRouteCompleted: boolean;
+      completedPOIs?: Array<{ name: string; order: number }>;
     };
     nftStatus: {
       willMint: boolean;
@@ -54,6 +57,7 @@ export default function UserPage() {
   const router = useRouter();
   const { address, isConnected } = useAccount();
   const { signMessageAsync } = useSignMessage();
+  const { t } = useLanguage();
 
   // 状态管理
   const [selectedPOI, setSelectedPOI] = useState<POIInfo | null>(null);
@@ -109,6 +113,7 @@ export default function UserPage() {
         },
         (error) => {
           console.warn('获取位置失败:', error);
+          // 默认位置
           setUserLocation({
             latitude: 30.123567,
             longitude: 103.456890,
@@ -118,7 +123,7 @@ export default function UserPage() {
         }
       );
     }
-  }, []); // 只在组件挂载时执行一次, []);
+  }, []);
 
   // 加载路线数据
   useEffect(() => {
@@ -135,11 +140,11 @@ export default function UserPage() {
         }
       } catch (error) {
         console.error('获取路线失败:', error);
-        showNotification('error', '网络错误，无法获取路线');
+        showNotification('error', t('common.networkError'));
       }
     };
     fetchRoutes();
-  }, []);
+  }, [t]);
 
   // 加载 POI 数据和打卡记录
   useEffect(() => {
@@ -175,7 +180,6 @@ export default function UserPage() {
             console.log('📊 当前路线已完成的打卡:', Array.from(completedOrders), '用户:', address);
             setCompletedPOIs(completedOrders);
           } else {
-            // 如果没有打卡记录，清空已完成列表
             setCompletedPOIs(new Set());
           }
         } catch (error) {
@@ -184,7 +188,7 @@ export default function UserPage() {
       };
       fetchPOIsAndCheckins();
     }
-  }, [selectedRoute, address]); // 依赖路线和钱包地址
+  }, [selectedRoute, address]);
 
   // 处理地图点击
   const handlePOIClick = (poiInfo: POIInfo) => {
@@ -196,12 +200,13 @@ export default function UserPage() {
   // 开始打卡流程
   const handleStartCheckin = () => {
     if (!isConnected || !address) {
-      showNotification('error', '请先连接钱包');
+      showNotification('error', t('common.connectWallet'));
       return;
     }
 
+    // 如果点击的 POI 不在当前路线上，给出友好提示
     if (!poiData) {
-      showNotification('error', '未找到打卡点数据');
+      showNotification('warning', t('poi.notInRoute'));
       return;
     }
 
@@ -222,10 +227,9 @@ export default function UserPage() {
     try {
       const message = generateSignatureMessage(poiData.id);
       
-      // 使用 wagmi 的 signMessage
       const signature = await signMessageAsync({ message });
       
-      showNotification('success', '签名成功');
+      showNotification('success', t('common.success'));
 
       const submitData = {
         routeId: selectedRoute,
@@ -257,7 +261,7 @@ export default function UserPage() {
       setCheckinResult(result);
 
       if (result.success) {
-        showNotification('success', '打卡成功！');
+        showNotification('success', t('user.checkinSuccess'));
         setShowSignatureDialog(false);
         setSelectedPOI(null);
         setPOIData(null);
@@ -266,19 +270,16 @@ export default function UserPage() {
         if (poiData) {
           setCompletedPOIs(prev => new Set([...prev, poiData.order]));
         }
-        
-        // 注意：不再清除 checkinResult，让打卡进度一直显示
       } else {
-        showNotification('error', result.message || '打卡失败，请重试');
+        showNotification('error', result.message || t('common.error'));
         
-        // 打卡失败后，2秒后清除失败结果，允许用户重试
         setTimeout(() => {
           setCheckinResult(null);
         }, 3000);
       }
     } catch (error: any) {
       console.error('打卡失败:', error);
-      showNotification('error', error.message || '打卡失败');
+      showNotification('error', error.message || t('common.error'));
     } finally {
       setIsLoading(false);
     }
@@ -287,10 +288,10 @@ export default function UserPage() {
   // 加载中状态
   if (status === "loading") {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-emerald-50 to-green-50">
+      <div className="flex items-center justify-center min-h-screen bg-stone-50">
         <div className="text-center">
-          <div className="animate-spin w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-xl text-emerald-700 font-bold">加载中...</p>
+          <Loader2 className="w-12 h-12 text-emerald-600 animate-spin mx-auto mb-4" />
+          <p className="text-lg text-emerald-800 font-medium">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -302,78 +303,105 @@ export default function UserPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 py-4">
-      <div className="max-w-[98vw] mx-auto px-2 sm:px-4">
+    <div className="min-h-screen bg-stone-50/50 py-4 relative font-sans">
+      <div className="fixed inset-0 bg-stone-50/50 -z-10" />
+
+      <PageTransition className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 通知栏 */}
         {notification && (
-          <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-2xl border-2 ${
-            notification.type === 'success' ? 'bg-emerald-500 border-emerald-600' :
-            notification.type === 'error' ? 'bg-red-500 border-red-600' : 'bg-yellow-500 border-yellow-600'
-          } text-white max-w-md animate-in slide-in-from-top-2 backdrop-blur-sm`}>
-            <p className="font-semibold">{notification.message}</p>
-          </div>
-        )}
-
-        {/* Header 组件 - 使用新的 wagmi 版本 */}
-        <ArrowTowerHeader />
-
-        {/* 头部 */}
-        <div className="text-center mb-4">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-700 mb-1">
-            🗺️ 箭塔村探索地图
-          </h1>
-          <p className="text-gray-600 font-medium">点击地图景点查看详情并打卡</p>
-        </div>
-
-        {/* 地图居中显示 */}
-        <div className="mb-6 max-w-6xl mx-auto">
-          <MapViewer
-            mapSvgUrl="/map.svg"
-            onPOIClick={handlePOIClick}
-            routePOIs={pois.map(poi => poi.order)}
-            completedPOIs={completedPOIs}
-          />
-        </div>
-
-        {/* 底部：路线选择器 */}
-        <div className="max-w-6xl mx-auto">
-          {routes.length > 0 && (
-            <RouteSelector
-              routes={routes}
-              selectedRoute={selectedRoute}
-              onSelectRoute={setSelectedRoute}
-              completedCount={completedPOIs.size}
-            />
-          )}
-        </div>
-
-        {/* 打卡进度 - 始终显示 */}
-        {selectedRoute && pois.length > 0 && (
-          <div className="mt-4 max-w-6xl mx-auto">
-            <CheckinProgress 
-              result={checkinResult}
-              completedPOIs={pois.filter(poi => completedPOIs.has(poi.order)).map(poi => ({
-                name: poi.name,
-                order: poi.order
-              }))}
-              routeName={routes.find(r => r.id === selectedRoute)?.name}
-              totalPOIs={pois.length}
-            />
-          </div>
-        )}
-
-        {/* 前往查询NFT按钮 */}
-        <div className="mt-6 text-center">
-          <Button
-            onClick={() => router.push('/user/checkmint')}
-            variant="outline"
-            className="border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-bold"
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`fixed top-24 right-4 z-50 p-4 rounded-xl shadow-2xl border ${
+              notification.type === 'success' ? 'bg-emerald-500/90 border-emerald-400' :
+              notification.type === 'error' ? 'bg-red-500/90 border-red-400' : 'bg-amber-500/90 border-amber-400'
+            } text-white max-w-md backdrop-blur-md`}
           >
-            前往查询NFT
-          </Button>
+            <p className="font-semibold flex items-center gap-2">
+              {notification.type === 'success' ? '✅' : notification.type === 'error' ? '❌' : '⚠️'}
+              {notification.message}
+            </p>
+          </motion.div>
+        )}
+
+        {/* Header 组件 */}
+        <div className="relative z-20 mb-8">
+          <ArrowTowerHeader />
+        </div>
+
+        {/* 头部标题区域 */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-stone-800 mb-2 tracking-tight">
+            {t('user.title')}
+          </h1>
+          <p className="text-stone-500 font-medium">{t('user.subtitle')}</p>
+        </motion.div>
+
+        {/* 主内容区域：网格布局 */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-12">
+          
+          {/* 左侧/上方：地图 (占据2列) */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="lg:col-span-2 relative z-10"
+          >
+            <MapViewer
+              mapSvgUrl="/map.svg"
+              onPOIClick={handlePOIClick}
+              routePOIs={pois.map(poi => poi.order)}
+              completedPOIs={completedPOIs}
+            />
+          </motion.div>
+
+          {/* 右侧/下方：控制面板 */}
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="space-y-6"
+          >
+            {/* 1. 路线选择 */}
+            {routes.length > 0 && (
+              <RouteSelector
+                routes={routes}
+                selectedRoute={selectedRoute}
+                onSelectRoute={setSelectedRoute}
+                completedCount={completedPOIs.size}
+              />
+            )}
+
+            {/* 2. 打卡进度 */}
+            {selectedRoute && pois.length > 0 && (
+              <CheckinProgress 
+                result={checkinResult}
+                completedPOIs={pois.filter(poi => completedPOIs.has(poi.order)).map(poi => ({
+                  name: poi.name,
+                  order: poi.order
+                }))}
+                routeName={routes.find(r => r.id === selectedRoute)?.name}
+                totalPOIs={pois.length}
+              />
+            )}
+
+            {/* 3. 前往NFT按钮 */}
+            <div className="pt-4">
+              <Button
+                onClick={() => router.push('/user/checkmint')}
+                className="w-full h-14 text-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 transition-all hover:-translate-y-0.5"
+              >
+                {t('user.viewNFT')} ➜
+              </Button>
+            </div>
+          </motion.div>
         </div>
         
-
         {/* POI 详情对话框 */}
         {selectedPOI && (
           <POIDetailModal
@@ -399,8 +427,7 @@ export default function UserPage() {
           poiName={poiData?.name}
           isLoading={isLoading}
         />
-      </div>
+      </PageTransition>
     </div>
   );
 }
-
