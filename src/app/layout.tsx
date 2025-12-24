@@ -3,6 +3,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { WalletProvider } from "@/components/WalletProvider";
 import { SessionProvider } from "next-auth/react";
+import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import "./globals.css";
 import MetadataLayout from "./MetadataLayout"; // 导入服务器组件
 
@@ -25,11 +26,13 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <SessionProvider>
-          <WalletProvider>
-             <MetadataLayout> 
-              {children}
-            </MetadataLayout>
-          </WalletProvider>
+          <LanguageProvider>
+            <WalletProvider>
+               <MetadataLayout> 
+                {children}
+              </MetadataLayout>
+            </WalletProvider>
+          </LanguageProvider>
         </SessionProvider>
       </body>
     </html>

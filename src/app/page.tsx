@@ -6,6 +6,10 @@ import { useAccount, useSignMessage } from "wagmi";
 import { useRouter } from "next/navigation";
 import { ConnectWallet } from "@/components/ConnectWallet";
 import { useSession, signIn } from "next-auth/react";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { PageTransition } from "@/components/ui/PageTransition";
+import { motion } from "framer-motion";
 
 // Define authentication states
 type AuthState =
@@ -17,26 +21,20 @@ type AuthState =
   | "pending"
   | "error";
 
-const getTitle = () => process.env.NEXT_PUBLIC_ITEM_TITLE || "Arrow Tower";
-
 export default function Home() {
   const { address, isConnected } = useAccount();
   const { signMessageAsync } = useSignMessage();
   const router = useRouter();
   const { status, data: session } = useSession();
+  const { t } = useLanguage();
 
   const [authState, setAuthState] = useState<AuthState>("initial");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [title, setTitle] = useState("");
 
   // signingRef 用于防止重复发起签名请求（锁）
   const signingRef = useRef(false);
   // mountedRef 用于避免在组件卸载后 setState
   const mountedRef = useRef(true);
-
-  useEffect(() => {
-    setTitle(getTitle());
-  }, []);
 
   useEffect(() => {
     // 在卸载时标记
@@ -108,12 +106,8 @@ export default function Home() {
           // 钱包中已有未完成签名
           if (mountedRef.current) {
             setAuthState("signing");
-            setErrorMessage(
-              "钱包中已有未完成的签名请求，请在钱包中确认或取消先前的签名请求后重试。"
-            );
+            setErrorMessage(t('home.walletPending'));
           }
-          // 注意：这里我们仍解除锁（allow retry），如果你想在钱包 pending 状态下阻止重试，可注释下面的逻辑，
-          // 并在用户手动取消/确认后由 UI 触发重试。
         } else if (
           msg.toLowerCase().includes("user rejected") ||
           msg.toLowerCase().includes("denied") ||
@@ -121,12 +115,12 @@ export default function Home() {
         ) {
           if (mountedRef.current) {
             setAuthState("error");
-            setErrorMessage("您已拒绝签名。若要继续，请在钱包中允许签名或重新连接钱包后重试。");
+            setErrorMessage(t('home.userRejected'));
           }
         } else {
           if (mountedRef.current) {
             setAuthState("error");
-            setErrorMessage(err instanceof Error ? err.message : "Authentication failed");
+            setErrorMessage(err instanceof Error ? err.message : t('home.authFailed'));
           }
         }
       } finally {
@@ -146,7 +140,7 @@ export default function Home() {
       }
     }
     // 监听 isConnected 和 address 的变化来触发认证流程
-  }, [isConnected, address, router, signMessageAsync]);
+  }, [isConnected, address, router, signMessageAsync, t]);
 
   useEffect(() => {
     // 当 session 可用时，根据 role 跳转
@@ -160,87 +154,158 @@ export default function Home() {
     }
   }, [session, router]);
 
+  // Background component
+  const Background = () => (
+    <div className="fixed inset-0 -z-10 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-100/50" />
+  );
+
   // Render different UI based on authentication state
   const renderAuthContent = () => {
+    // Shared container class
+    const containerClass = "flex flex-col items-center justify-center min-h-screen p-4 relative overflow-hidden";
+    
+    // Language switcher absolute position
+    const langSwitcher = (
+      <div className="absolute top-4 right-4 z-10">
+        <LanguageSwitcher />
+      </div>
+    );
+
     switch (authState) {
       case "initial":
         return (
-          <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
-            <h1 className="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-700 mb-8">
-              {title}
-            </h1>
-            <div className="mb-8 rounded-2xl overflow-hidden shadow-2xl border-4 border-emerald-200">
-              <Image
-                src="/arrowtower.jpg"
-                alt="ArrowTower"
-                width={400}
-                height={400}
-                priority
-                className="object-cover"
-              />
-            </div>
-            <p className="mb-6 text-gray-600 font-medium text-lg">请连接钱包以继续</p>
-            <ConnectWallet />
+          <div className={containerClass}>
+            <Background />
+            {langSwitcher}
+            
+            <PageTransition className="flex flex-col items-center max-w-lg w-full">
+              <motion.h1 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-4xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-700 mb-2 text-center"
+              >
+                {t('home.title')}
+              </motion.h1>
+              
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-emerald-600/80 font-medium text-lg mb-8 text-center max-w-md"
+              >
+                {t('home.subtitle')}
+              </motion.p>
+
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.3, type: "spring" }}
+                className="mb-10 relative group"
+              >
+                <div className="absolute inset-0 bg-emerald-400 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white/50 backdrop-blur-sm">
+                  <Image
+                    src="/arrowtower.jpg"
+                    alt="ArrowTower"
+                    width={400}
+                    height={400}
+                    priority
+                    className="object-cover transform transition-transform duration-700 group-hover:scale-105"
+                  />
+                </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="w-full flex flex-col items-center"
+              >
+                <p className="mb-6 text-gray-600 font-medium text-lg text-center">{t('home.connectPrompt')}</p>
+                <div className="w-full max-w-xs transform hover:scale-105 transition-transform duration-200">
+                  <ConnectWallet />
+                </div>
+              </motion.div>
+            </PageTransition>
           </div>
         );
 
       case "connecting":
         return (
-          <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
-            <div className="text-center">
-              <p className="text-2xl font-bold mb-4 text-emerald-700">钱包连接中...</p>
-              <div className="animate-spin w-16 h-16 mx-auto border-4 border-emerald-500 border-t-transparent rounded-full"></div>
-            </div>
+          <div className={containerClass}>
+            <Background />
+            <PageTransition className="text-center bg-white/60 backdrop-blur-md p-10 rounded-3xl shadow-xl border border-white/50">
+              <p className="text-2xl font-bold mb-6 text-emerald-800">{t('home.connecting')}</p>
+              <div className="relative w-20 h-20 mx-auto">
+                 <div className="absolute inset-0 border-4 border-emerald-200 rounded-full"></div>
+                 <div className="absolute inset-0 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            </PageTransition>
           </div>
         );
 
       case "signing":
         return (
-          <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
-            <div className="text-center">
-              <p className="text-2xl font-bold mb-4 text-emerald-700">正在签名认证...</p>
-              <div className="animate-pulse text-gray-600">请在钱包中确认签名</div>
-              {errorMessage && <p className="text-sm text-gray-600 mt-3">{errorMessage}</p>}
-            </div>
+          <div className={containerClass}>
+            <Background />
+            <PageTransition className="text-center bg-white/60 backdrop-blur-md p-10 rounded-3xl shadow-xl border border-white/50 max-w-md">
+              <p className="text-2xl font-bold mb-4 text-emerald-800">{t('home.signing')}</p>
+              <div className="animate-pulse text-emerald-600 font-medium mb-4">{t('home.signPrompt')}</div>
+              {errorMessage && (
+                <div className="bg-amber-50 text-amber-700 p-3 rounded-lg text-sm border border-amber-200">
+                  {errorMessage}
+                </div>
+              )}
+            </PageTransition>
           </div>
         );
 
       case "authenticating":
         return (
-          <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
-            <div className="text-center">
-              <p className="text-2xl font-bold mb-4 text-emerald-700">认证中...</p>
-              <div className="animate-spin w-16 h-16 mx-auto border-4 border-emerald-500 border-t-transparent rounded-full"></div>
-            </div>
+          <div className={containerClass}>
+            <Background />
+            <PageTransition className="text-center bg-white/60 backdrop-blur-md p-10 rounded-3xl shadow-xl border border-white/50">
+              <p className="text-2xl font-bold mb-6 text-emerald-800">{t('home.authenticating')}</p>
+              <div className="relative w-20 h-20 mx-auto">
+                 <div className="absolute inset-0 border-4 border-emerald-200 rounded-full"></div>
+                 <div className="absolute inset-0 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            </PageTransition>
           </div>
         );
 
       case "pending":
         return (
-          <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
-            <div className="text-center">
-              <p className="text-2xl font-bold mb-4 text-emerald-700">注册处理中</p>
-              <p className="text-gray-600">请完成后续注册步骤</p>
-            </div>
+          <div className={containerClass}>
+            <Background />
+            <PageTransition className="text-center bg-white/60 backdrop-blur-md p-10 rounded-3xl shadow-xl border border-white/50">
+              <p className="text-2xl font-bold mb-4 text-emerald-800">{t('home.registering')}</p>
+              <p className="text-gray-600">Please complete registration...</p>
+            </PageTransition>
           </div>
         );
 
       case "error":
         return (
-          <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
-            <div className="text-center">
-              <p className="text-2xl font-bold mb-4 text-red-500">认证失败</p>
-              {errorMessage && <p className="text-gray-600 mb-4">{errorMessage}</p>}
+          <div className={containerClass}>
+            <Background />
+            <PageTransition className="text-center bg-white/60 backdrop-blur-md p-10 rounded-3xl shadow-xl border border-red-100 max-w-md">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">⚠️</span>
+              </div>
+              <p className="text-2xl font-bold mb-4 text-red-600">{t('home.authFailed')}</p>
+              {errorMessage && <p className="text-gray-600 mb-6 bg-red-50 p-3 rounded-lg text-sm">{errorMessage}</p>}
               <button
                 onClick={() => {
                   setAuthState("initial");
                   setErrorMessage(null);
                 }}
-                className="mt-4 px-6 py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 font-semibold shadow-lg transition-all duration-200"
+                className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:from-emerald-600 hover:to-teal-700 font-bold shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
               >
-                重新尝试
+                {t('home.retry')}
               </button>
-            </div>
+            </PageTransition>
           </div>
         );
 

@@ -1,3 +1,4 @@
+// /app/maps/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,6 +8,10 @@ import { WalletConnector } from '@/components/maps/WalletConnector';
 import { SignatureConfirm } from '@/components/maps/SignatureConfirm';
 import { CheckinProgress } from '@/components/maps/CheckinProgress';
 import { Card } from '@/components/ui/card';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
+import { PageTransition } from '@/components/ui/PageTransition';
+import { motion } from 'framer-motion';
 
 // 类型定义
 interface Route {
@@ -50,6 +55,8 @@ declare global {
 }
 
 export default function MapsPage() {
+  const { t } = useLanguage();
+
   // 状态管理
   const [selectedPOI, setSelectedPOI] = useState<POIInfo | null>(null);
   const [poiData, setPOIData] = useState<POI | null>(null);
@@ -125,11 +132,11 @@ export default function MapsPage() {
         }
       } catch (error) {
         console.error('获取路线失败:', error);
-        showNotification('error', '网络错误，无法获取路线');
+        showNotification('error', t('common.networkError'));
       }
     };
     fetchRoutes();
-  }, []);
+  }, [t]);
 
   // 加载 POI 数据
   useEffect(() => {
@@ -153,7 +160,7 @@ export default function MapsPage() {
   // 连接钱包
   const connectWallet = async () => {
     if (typeof window.ethereum === 'undefined') {
-      showNotification('error', '请安装 MetaMask 钱包');
+      showNotification('error', t('common.installWallet'));
       return;
     }
 
@@ -164,10 +171,10 @@ export default function MapsPage() {
       });
       setWalletAddress(accounts[0]);
       setIsWalletConnected(true);
-      showNotification('success', '钱包连接成功');
+      showNotification('success', t('common.walletConnected'));
     } catch (error) {
       console.error('连接钱包失败:', error);
-      showNotification('error', '钱包连接失败');
+      showNotification('error', 'Wallet connection failed');
     } finally {
       setIsLoading(false);
     }
@@ -178,7 +185,6 @@ export default function MapsPage() {
     setSelectedPOI(poiInfo);
     
     // 根据 POI 编号查找对应的 POI 数据
-    // 假设 POI 的 order 字段对应编号
     const matchedPOI = pois.find(poi => poi.order === parseInt(poiInfo.poiNumber));
     setPOIData(matchedPOI || null);
   };
@@ -186,12 +192,12 @@ export default function MapsPage() {
   // 开始打卡流程
   const handleStartCheckin = () => {
     if (!isWalletConnected) {
-      showNotification('error', '请先连接钱包');
+      showNotification('error', t('common.connectPrompt'));
       return;
     }
 
     if (!poiData) {
-      showNotification('error', '未找到打卡点数据');
+      showNotification('error', t('common.error'));
       return;
     }
 
@@ -207,7 +213,7 @@ export default function MapsPage() {
   // 使用 MetaMask 签名
   const signMessage = async (messageToSign: string) => {
     if (!isWalletConnected || !walletAddress) {
-      throw new Error('请先连接钱包');
+      throw new Error(t('common.connectWallet'));
     }
 
     try {
@@ -218,7 +224,7 @@ export default function MapsPage() {
       return signature;
     } catch (error) {
       console.error('签名失败:', error);
-      throw new Error('用户拒绝签名或签名失败');
+      throw new Error(t('home.userRejected'));
     }
   };
 
@@ -234,7 +240,7 @@ export default function MapsPage() {
       // 请求签名
       const signature = await signMessage(message);
       
-      showNotification('success', '签名成功');
+      showNotification('success', t('home.signing'));
 
       // 提交打卡
       const submitData = {
@@ -269,7 +275,7 @@ export default function MapsPage() {
       setCheckinResult(result);
 
       if (result.success) {
-        showNotification('success', '打卡成功！');
+        showNotification('success', t('user.checkinSuccess'));
         setShowSignatureDialog(false);
         setSelectedPOI(null);
         setPOIData(null);
@@ -279,49 +285,74 @@ export default function MapsPage() {
           setCompletedPOIs(prev => new Set([...prev, poiData.order]));
         }
       } else {
-        showNotification('error', result.message || '打卡失败，请重试');
+        showNotification('error', result.message || t('common.error'));
       }
     } catch (error: any) {
       console.error('打卡失败:', error);
-      showNotification('error', error.message || '打卡失败');
+      showNotification('error', error.message || t('common.error'));
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 py-4">
-      <div className="max-w-[98vw] mx-auto px-2 sm:px-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 py-4 relative">
+       {/* 语言切换器 */}
+       <div className="absolute top-4 right-4 z-50">
+        <LanguageSwitcher />
+      </div>
+
+      <PageTransition className="max-w-[98vw] mx-auto px-2 sm:px-4">
         {/* 通知栏 */}
         {notification && (
-          <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-2xl border-2 ${
-            notification.type === 'success' ? 'bg-emerald-500 border-emerald-600' :
-            notification.type === 'error' ? 'bg-red-500 border-red-600' : 'bg-yellow-500 border-yellow-600'
-          } text-white max-w-md animate-in slide-in-from-top-2 backdrop-blur-sm`}>
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`fixed top-20 right-4 z-50 p-4 rounded-xl shadow-2xl border ${
+              notification.type === 'success' ? 'bg-emerald-500/90 border-emerald-400' :
+              notification.type === 'error' ? 'bg-red-500/90 border-red-400' : 'bg-amber-500/90 border-amber-400'
+            } text-white max-w-md backdrop-blur-md`}
+          >
             <p className="font-semibold">{notification.message}</p>
-          </div>
+          </motion.div>
         )}
 
         {/* 头部 - 紧凑 */}
-        <div className="text-center mb-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="text-center mb-4 pt-8"
+        >
           <h1 className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-700 mb-1">
-             箭塔村探索地图
+             {t('user.title')}
           </h1>
-          <p className="text-gray-600 font-medium">点击地图景点查看详情并打卡</p>
-        </div>
+          <p className="text-gray-600 font-medium">{t('user.subtitle')}</p>
+        </motion.div>
 
         {/* 地图居中显示 - 限制宽度 */}
-        <div className="mb-6 max-w-6xl mx-auto">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mb-6 max-w-6xl mx-auto"
+        >
           <MapViewer
             mapSvgUrl="/map.svg"
             onPOIClick={handlePOIClick}
             routePOIs={pois.map(poi => poi.order)}
             completedPOIs={completedPOIs}
           />
-        </div>
+        </motion.div>
 
         {/* 底部：控制面板 - 水平排列，宽度与地图一致 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl mx-auto">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl mx-auto"
+        >
           {/* 钱包连接 */}
           <WalletConnector
             isConnected={isWalletConnected}
@@ -333,7 +364,7 @@ export default function MapsPage() {
           {/* 路线信息 */}
           {selectedRoute && routes.length > 0 && (
             <Card className="p-5 bg-white/80 backdrop-blur-sm shadow-lg border-2 border-emerald-200">
-              <h3 className="font-bold mb-3 text-emerald-900">当前路线</h3>
+              <h3 className="font-bold mb-3 text-emerald-900">{t('user.currentRoute')}</h3>
               {routes.find(r => r.id === selectedRoute) && (
                 <div className="space-y-2 text-sm">
                   <p className="font-bold text-emerald-700">
@@ -343,13 +374,13 @@ export default function MapsPage() {
                     {routes.find(r => r.id === selectedRoute)?.description}
                   </p>
                   <p className="text-gray-600 font-medium">
-                    共 {routes.find(r => r.id === selectedRoute)?.poiCount} 个打卡点
+                    {routes.find(r => r.id === selectedRoute)?.poiCount} {t('user.points')}
                   </p>
                 </div>
               )}
             </Card>
           )}
-        </div>
+        </motion.div>
 
         {/* 打卡结果 - 与地图宽度一致 */}
         {checkinResult && (
@@ -382,7 +413,7 @@ export default function MapsPage() {
           poiName={poiData?.name}
           isLoading={isLoading}
         />
-      </div>
+      </PageTransition>
     </div>
   );
 }
